@@ -1,0 +1,807 @@
+
+    <!DOCTYPE html>
+    <html>
+
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Image Map and Weatherlayer</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/openlayers/4.6.5/ol-debug.css" />
+
+    <style media="screen">
+#map .ol-attribution {
+left: .5em;
+right: unset;
+}
+
+.control-box {
+    text-align: center;
+margin: 10px 0;
+}
+
+.legend {
+    z-index: 1;
+height: 256px;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+.legend-box p{
+    font-size: 13px;
+    padding-left: 3px;
+}
+.legenddiv{
+    float: left;
+}
+
+.export-btn {
+    -moz-box-shadow: inset 0px 1px 0px 0px #54a3f7;
+    -webkit-box-shadow: inset 0px 1px 0px 0px #54a3f7;
+    box-shadow: inset 0px 1px 0px 0px #54a3f7;
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #007dc1), color-stop(1, #0061a7));
+background: -moz-linear-gradient(top, #007dc1 5%, #0061a7 100%);
+background: -webkit-linear-gradient(top, #007dc1 5%, #0061a7 100%);
+background: -o-linear-gradient(top, #007dc1 5%, #0061a7 100%);
+background: -ms-linear-gradient(top, #007dc1 5%, #0061a7 100%);
+background: linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#007dc1', endColorstr='#0061a7', GradientType=0);
+    background-color: #007dc1;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+border: 1px solid #124d77;
+display: inline-block;
+cursor: pointer;
+color: #ffffff;
+    font-family: Arial;
+    font-size: 13px;
+padding: 6px 24px;
+    text-decoration: none;
+    text-shadow: 0px 1px 0px #154682;
+}
+
+.export-btn:hover {
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #0061a7), color-stop(1, #007dc1));
+background: -moz-linear-gradient(top, #0061a7 5%, #007dc1 100%);
+background: -webkit-linear-gradient(top, #0061a7 5%, #007dc1 100%);
+background: -o-linear-gradient(top, #0061a7 5%, #007dc1 100%);
+background: -ms-linear-gradient(top, #0061a7 5%, #007dc1 100%);
+background: linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0061a7', endColorstr='#007dc1', GradientType=0);
+    background-color: #0061a7;
+}
+
+.export-btn:active {
+position: relative;
+top: 1px;
+}
+
+.loader {
+display: none;
+border: 5px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 5px solid #3498db;
+width: 60px;
+height: 60px;
+    -webkit-animation: spin 2s linear infinite;
+    /* Safari */
+animation: spin 2s linear infinite;
+
+position: relative;
+top: 50%;
+left: 50%;
+    margin-top: -60px;
+    margin-left: -60px;
+}
+
+.loader.loading {
+display: block;
+    z-index: 5;
+}
+
+.ol-viewport.loading {
+    -webkit-filter: blur(4px);
+    -moz-filter: blur(4px);
+    -ms-filter: blur(4px);
+    -o-filter: blur(4px);
+filter: blur(4px);
+}
+
+.export-btn:disabled {
+cursor: not-allowed;
+filter: alpha(opacity=65);
+    -webkit-box-shadow: none;
+    box-shadow: none;
+opacity: .65;
+}
+
+/* Safari */
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+    transform: rotate(0deg);
+    }
+    100% {
+    transform: rotate(360deg);
+    }
+}
+.tooltip {
+    /*width: 110px;*/
+position: relative;
+background: rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+color: white;
+padding: 4px 8px;
+    white-space: nowrap;
+}
+
+span.hover-layer-name {
+    text-align: left;
+}
+span.hover-layer-value {
+    text-align: right;
+}
+
+.info-error{
+    clear: left;
+}
+
+</style>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/openlayers/4.6.5/ol.js"></script>
+<script type="text/javascript">
+RegExp.escape=function(r){return r.replace(/[-\/\\^$*+?.()|[\]{}]/g,"\\$&")},function(r){"use strict";var e;e="undefined"!=typeof jQuery&&jQuery?jQuery:{},e.csv={defaults:{separator:",",delimiter:'"',headers:!0},hooks:{castToScalar:function(r,e){var a=/\./;if(isNaN(r))return r;if(a.test(r))return parseFloat(r);var t=parseInt(r);return isNaN(t)?null:t}},parsers:{parse:function(e,a){function t(){if(c=0,u="",a.start&&a.state.rowNum<a.start)return i=[],a.state.rowNum++,void(a.state.colNum=1);if(a.onParseEntry===r)l.push(i);else{var e=a.onParseEntry(i,a.state);e!==!1&&l.push(e)}i=[],a.end&&a.state.rowNum>=a.end&&(f=!0),a.state.rowNum++,a.state.colNum=1}function s(){if(a.onParseValue===r)i.push(u);else{var e=a.onParseValue(u,a.state);e!==!1&&i.push(e)}u="",c=0,a.state.colNum++}var o=a.separator,n=a.delimiter;a.state.rowNum||(a.state.rowNum=1),a.state.colNum||(a.state.colNum=1);var l=[],i=[],c=0,u="",f=!1,m=RegExp.escape(o),p=RegExp.escape(n),d=/(D|S|\r\n|\n|\r|[^DS\r\n]+)/,w=d.source;return w=w.replace(/S/g,m),w=w.replace(/D/g,p),d=RegExp(w,"gm"),e.replace(d,function(r){if(!f)switch(c){case 0:if(r===o){u+="",s();break}if(r===n){c=1;break}if(/^(\r\n|\n|\r)$/.test(r)){s(),t();break}u+=r,c=3;break;case 1:if(r===n){c=2;break}u+=r,c=1;break;case 2:if(r===n){u+=r,c=1;break}if(r===o){s();break}if(/^(\r\n|\n|\r)$/.test(r)){s(),t();break}throw new Error("CSVDataError: Illegal State [Row:"+a.state.rowNum+"][Col:"+a.state.colNum+"]");case 3:if(r===o){s();break}if(/^(\r\n|\n|\r)$/.test(r)){s(),t();break}if(r===n)throw new Error("CSVDataError: Illegal Quote [Row:"+a.state.rowNum+"][Col:"+a.state.colNum+"]");throw new Error("CSVDataError: Illegal Data [Row:"+a.state.rowNum+"][Col:"+a.state.colNum+"]");default:throw new Error("CSVDataError: Unknown State [Row:"+a.state.rowNum+"][Col:"+a.state.colNum+"]")}}),0!==i.length&&(s(),t()),l},splitLines:function(e,a){function t(){if(l=0,a.start&&a.state.rowNum<a.start)return i="",void a.state.rowNum++;if(a.onParseEntry===r)n.push(i);else{var e=a.onParseEntry(i,a.state);e!==!1&&n.push(e)}i="",a.end&&a.state.rowNum>=a.end&&(c=!0),a.state.rowNum++}var s=a.separator,o=a.delimiter;a.state.rowNum||(a.state.rowNum=1);var n=[],l=0,i="",c=!1,u=RegExp.escape(s),f=RegExp.escape(o),m=/(D|S|\n|\r|[^DS\r\n]+)/,p=m.source;return p=p.replace(/S/g,u),p=p.replace(/D/g,f),m=RegExp(p,"gm"),e.replace(m,function(r){if(!c)switch(l){case 0:if(r===s){i+=r,l=0;break}if(r===o){i+=r,l=1;break}if("\n"===r){t();break}if(/^\r$/.test(r))break;i+=r,l=3;break;case 1:if(r===o){i+=r,l=2;break}i+=r,l=1;break;case 2:var e=i.substr(i.length-1);if(r===o&&e===o){i+=r,l=1;break}if(r===s){i+=r,l=0;break}if("\n"===r){t();break}if("\r"===r)break;throw new Error("CSVDataError: Illegal state [Row:"+a.state.rowNum+"]");case 3:if(r===s){i+=r,l=0;break}if("\n"===r){t();break}if("\r"===r)break;if(r===o)throw new Error("CSVDataError: Illegal quote [Row:"+a.state.rowNum+"]");throw new Error("CSVDataError: Illegal state [Row:"+a.state.rowNum+"]");default:throw new Error("CSVDataError: Unknown state [Row:"+a.state.rowNum+"]")}}),""!==i&&t(),n},parseEntry:function(e,a){function t(){if(a.onParseValue===r)n.push(i);else{var e=a.onParseValue(i,a.state);e!==!1&&n.push(e)}i="",l=0,a.state.colNum++}var s=a.separator,o=a.delimiter;a.state.rowNum||(a.state.rowNum=1),a.state.colNum||(a.state.colNum=1);var n=[],l=0,i="";if(!a.match){var c=RegExp.escape(s),u=RegExp.escape(o),f=/(D|S|\n|\r|[^DS\r\n]+)/,m=f.source;m=m.replace(/S/g,c),m=m.replace(/D/g,u),a.match=RegExp(m,"gm")}return e.replace(a.match,function(r){switch(l){case 0:if(r===s){i+="",t();break}if(r===o){l=1;break}if("\n"===r||"\r"===r)break;i+=r,l=3;break;case 1:if(r===o){l=2;break}i+=r,l=1;break;case 2:if(r===o){i+=r,l=1;break}if(r===s){t();break}if("\n"===r||"\r"===r)break;throw new Error("CSVDataError: Illegal State [Row:"+a.state.rowNum+"][Col:"+a.state.colNum+"]");case 3:if(r===s){t();break}if("\n"===r||"\r"===r)break;if(r===o)throw new Error("CSVDataError: Illegal Quote [Row:"+a.state.rowNum+"][Col:"+a.state.colNum+"]");throw new Error("CSVDataError: Illegal Data [Row:"+a.state.rowNum+"][Col:"+a.state.colNum+"]");default:throw new Error("CSVDataError: Unknown State [Row:"+a.state.rowNum+"][Col:"+a.state.colNum+"]")}}),t(),n}},helpers:{collectPropertyNames:function(r){var e,a,t=[];for(e in r)for(a in r[e])r[e].hasOwnProperty(a)&&t.indexOf(a)<0&&"function"!=typeof r[e][a]&&t.push(a);return t}},toArray:function(a,t,s){var t=t!==r?t:{},o={};o.callback=s!==r&&"function"==typeof s&&s,o.separator="separator"in t?t.separator:e.csv.defaults.separator,o.delimiter="delimiter"in t?t.delimiter:e.csv.defaults.delimiter;var n=t.state!==r?t.state:{},t={delimiter:o.delimiter,separator:o.separator,onParseEntry:t.onParseEntry,onParseValue:t.onParseValue,state:n},l=e.csv.parsers.parseEntry(a,t);return o.callback?void o.callback("",l):l},toArrays:function(a,t,s){var t=t!==r?t:{},o={};o.callback=s!==r&&"function"==typeof s&&s,o.separator="separator"in t?t.separator:e.csv.defaults.separator,o.delimiter="delimiter"in t?t.delimiter:e.csv.defaults.delimiter;var n=[],t={delimiter:o.delimiter,separator:o.separator,onPreParse:t.onPreParse,onParseEntry:t.onParseEntry,onParseValue:t.onParseValue,onPostParse:t.onPostParse,start:t.start,end:t.end,state:{rowNum:1,colNum:1}};return t.onPreParse!==r&&t.onPreParse(a,t.state),n=e.csv.parsers.parse(a,t),t.onPostParse!==r&&t.onPostParse(n,t.state),o.callback?void o.callback("",n):n},toObjects:function(a,t,s){var t=t!==r?t:{},o={};o.callback=s!==r&&"function"==typeof s&&s,o.separator="separator"in t?t.separator:e.csv.defaults.separator,o.delimiter="delimiter"in t?t.delimiter:e.csv.defaults.delimiter,o.headers="headers"in t?t.headers:e.csv.defaults.headers,t.start="start"in t?t.start:1,o.headers&&t.start++,t.end&&o.headers&&t.end++;var n=[],l=[],t={delimiter:o.delimiter,separator:o.separator,onPreParse:t.onPreParse,onParseEntry:t.onParseEntry,onParseValue:t.onParseValue,onPostParse:t.onPostParse,start:t.start,end:t.end,state:{rowNum:1,colNum:1},match:!1,transform:t.transform},i={delimiter:o.delimiter,separator:o.separator,start:1,end:1,state:{rowNum:1,colNum:1}};t.onPreParse!==r&&t.onPreParse(a,t.state);var c=e.csv.parsers.splitLines(a,i),u=e.csv.toArray(c[0],t),n=e.csv.parsers.splitLines(a,t);t.state.colNum=1,u?t.state.rowNum=2:t.state.rowNum=1;for(var f=0,m=n.length;f<m;f++){for(var p=e.csv.toArray(n[f],t),d={},w=0;w<u.length;w++)d[u[w]]=p[w];t.transform!==r?l.push(t.transform.call(r,d)):l.push(d),t.state.rowNum++}return t.onPostParse!==r&&t.onPostParse(l,t.state),o.callback?void o.callback("",l):l},fromArrays:function(a,t,s){var t=t!==r?t:{},o={};o.callback=s!==r&&"function"==typeof s&&s,o.separator="separator"in t?t.separator:e.csv.defaults.separator,o.delimiter="delimiter"in t?t.delimiter:e.csv.defaults.delimiter;var n,l,i,c,u="";for(i=0;i<a.length;i++){for(n=a[i],l=[],c=0;c<n.length;c++){var f=n[c]===r||null===n[c]?"":n[c].toString();f.indexOf(o.delimiter)>-1&&(f=f.replace(o.delimiter,o.delimiter+o.delimiter));var m="\n|\r|S|D";m=m.replace("S",o.separator),m=m.replace("D",o.delimiter),f.search(m)>-1&&(f=o.delimiter+f+o.delimiter),l.push(f)}u+=l.join(o.separator)+"\r\n"}return o.callback?void o.callback("",u):u},fromObjects:function(a,t,s){var t=t!==r?t:{},o={};if(o.callback=s!==r&&"function"==typeof s&&s,o.separator="separator"in t?t.separator:e.csv.defaults.separator,o.delimiter="delimiter"in t?t.delimiter:e.csv.defaults.delimiter,o.headers="headers"in t?t.headers:e.csv.defaults.headers,o.sortOrder="sortOrder"in t?t.sortOrder:"declare",o.manualOrder="manualOrder"in t?t.manualOrder:[],o.transform=t.transform,"string"==typeof o.manualOrder&&(o.manualOrder=e.csv.toArray(o.manualOrder,o)),o.transform!==r){var n=a;a=[];var l;for(l=0;l<n.length;l++)a.push(o.transform.call(r,n[l]))}var i=e.csv.helpers.collectPropertyNames(a);if("alpha"===o.sortOrder&&i.sort(),o.manualOrder.length>0){var c,u=[].concat(o.manualOrder);for(c=0;c<i.length;c++)u.indexOf(i[c])<0&&u.push(i[c]);i=u}var f,c,m,p,d=[];for(o.headers&&d.push(i),f=0;f<a.length;f++){for(m=[],c=0;c<i.length;c++)p=i[c],p in a[f]&&"function"!=typeof a[f][p]?m.push(a[f][p]):m.push("");d.push(m)}return e.csv.fromArrays(d,t,o.callback)}},e.csvEntry2Array=e.csv.toArray,e.csv2Array=e.csv.toArrays,e.csv2Dictionary=e.csv.toObjects,"undefined"!=typeof module&&module.exports&&(module.exports=e.csv)}.call(this);
+</script>
+<script type="text/javascript">
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+var saveAs = saveAs || function(e) {
+    "use strict";
+    if (typeof e === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+        return
+    }
+    var t = e.document,
+    n = function() {
+        return e.URL || e.webkitURL || e
+    },
+    r = t.createElementNS("http://www.w3.org/1999/xhtml", "a"),
+    o = "download" in r,
+    a = function(e) {
+        var t = new MouseEvent("click");
+        e.dispatchEvent(t)
+    },
+    i = /constructor/i.test(e.HTMLElement) || e.safari,
+    f = /CriOS\/[\d]+/.test(navigator.userAgent),
+    u = function(t) {
+        (e.setImmediate || e.setTimeout)(function() {
+            throw t
+        }, 0)
+    },
+    s = "application/octet-stream",
+    d = 1e3 * 40,
+    c = function(e) {
+        var t = function() {
+            if (typeof e === "string") {
+                n().revokeObjectURL(e)
+            } else {
+                e.remove()
+            }
+        };
+        setTimeout(t, d)
+    },
+    l = function(e, t, n) {
+        t = [].concat(t);
+        var r = t.length;
+        while (r--) {
+            var o = e["on" + t[r]];
+            if (typeof o === "function") {
+                try {
+                    o.call(e, n || e)
+                } catch (a) {
+                    u(a)
+                }
+            }
+        }
+    },
+    p = function(e) {
+        if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(e.type)) {
+            return new Blob([String.fromCharCode(65279), e], {
+            type: e.type
+            })
+        }
+        return e
+    },
+    v = function(t, u, d) {
+        if (!d) {
+            t = p(t)
+        }
+        var v = this,
+        w = t.type,
+        m = w === s,
+        y, h = function() {
+            l(v, "writestart progress write writeend".split(" "))
+        },
+        S = function() {
+            if ((f || m && i) && e.FileReader) {
+                var r = new FileReader;
+                r.onloadend = function() {
+                    var t = f ? r.result : r.result.replace(/^data:[^;]*;/, "data:attachment/file;");
+                    var n = e.open(t, "_blank");
+                    if (!n) e.location.href = t;
+                    t = undefined;
+                    v.readyState = v.DONE;
+                    h()
+                };
+                r.readAsDataURL(t);
+                v.readyState = v.INIT;
+                return
+            }
+            if (!y) {
+                y = n().createObjectURL(t)
+            }
+            if (m) {
+                e.location.href = y
+            } else {
+                var o = e.open(y, "_blank");
+                if (!o) {
+                    e.location.href = y
+                }
+            }
+            v.readyState = v.DONE;
+            h();
+            c(y)
+        };
+        v.readyState = v.INIT;
+        if (o) {
+            y = n().createObjectURL(t);
+            setTimeout(function() {
+                r.href = y;
+                r.download = u;
+                a(r);
+                h();
+                c(y);
+                v.readyState = v.DONE
+            });
+            return
+        }
+        S()
+    },
+    w = v.prototype,
+    m = function(e, t, n) {
+        return new v(e, t || e.name || "download", n)
+    };
+    if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+        return function(e, t, n) {
+            t = t || e.name || "download";
+            if (!n) {
+                e = p(e)
+            }
+            return navigator.msSaveOrOpenBlob(e, t)
+        }
+    }
+    w.abort = function() {};
+    w.readyState = w.INIT = 0;
+    w.WRITING = 1;
+    w.DONE = 2;
+    w.error = w.onwritestart = w.onprogress = w.onwrite = w.onabort = w.onerror = w.onwriteend = null;
+    return m
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content);
+if (typeof module !== "undefined" && module.exports) {
+    module.exports.saveAs = saveAs
+    } else if (typeof define !== "undefined" && define !== null && define.amd !== null) {
+        define("FileSaver.js", function() {
+            return saveAs
+        })
+    }
+    </script>
+    </head>
+
+    <body>
+    <div class="control-box">
+    <button type="button" name="button" class="export-btn" id="export-png" disabled>Export PNG</button>
+    </div>
+    <div style="width: 800px; height: 400px;" class="map" id="map">
+    </div>
+
+
+    <div class="legend-box">
+    </div>
+    <div class="info-error">
+        <p></p>
+    </div>
+    <script type="text/javascript">
+
+    /*übergabe von url params*/
+    var parts = String(window.location).split('/');
+var API_BASE_URL = 'https://api.meteomatics.com';
+var WMS_BASE_URL = API_BASE_URL + '/wms';
+var rect = '80,-180_-80,180'.split('_');
+var mResolution = '721x321'.split('x');
+var format = 'image/png';
+var weatherlayer = "mix:wind_gust_10m_1d_efi:idx";
+var viewstyle = '';
+var datetime = '2022-07-16T03:07:37Z';
+var optionals = '&timeout=330&user=singaporeairlines_tin&model=mix';
+
+    /* ende übergabe von url*/
+
+    var csvLayerMap = {};
+    var helpTooltipElement = null;
+    var helpTooltip = null;
+
+    var weatherLayerList = weatherlayer.split(',');
+    var mLatMaxLonMin = rect[0].split(',').map(function(x) {
+        return Number(x);
+    });
+    var mLatMinLonMax = rect[1].split(',').map(function(x) {
+        return Number(x);
+    });
+    var centerXY = calcCenter(mLatMinLonMax, mLatMaxLonMin);
+    var extent = [mLatMaxLonMin[1], mLatMinLonMax[0], mLatMinLonMax[1], mLatMaxLonMin[0]]; //minX, minY, maxX, maxY
+    var extentApi = [mLatMinLonMax[0], mLatMaxLonMin[1], mLatMaxLonMin[0], mLatMinLonMax[1]];
+    var crs = 'EPSG:4326';
+    var layerLoadList = {};
+    var imageCount = weatherLayerList.length;
+    var imagesLoaded = 0;
+    var first = true;
+    $(function() {
+
+        var osmlayer = new ol.layer.Tile({
+        source: new ol.source.OSM()
+        })
+
+        view = new ol.View({
+        center: [0, 0],
+        zoom: 0,
+        projection: 'EPSG:4326',
+        });
+
+        var attribution = new ol.control.Attribution({
+        collapsible: false
+        });
+        $('.map').append('<div class="loader"></div>');
+
+        map = new ol.Map({
+        interactions: ol.interaction.defaults({
+        doubleClickZoom: false,
+        dragPan: false,
+        dragAndDrop: false,
+        keyboardPan: false,
+        keyboardZoom: false,
+        mouseWheelZoom: false,
+        pointer: false,
+        select: false,
+        }),
+        controls: ol.control.defaults({
+        attribution: false,
+        rotate: false,
+        zoom: false
+        }).extend([attribution]),
+        layers: [osmlayer /*, wmslayer*/ ],
+        target: 'map',
+        view: view
+        });
+
+        $('#map').on("mousedown", function(event) {
+            event.preventDefault()
+            return false;
+        })
+
+        map.once('postcompose', function(event) {
+            console.log('map loaded');
+            var pixelWidth = Math.abs(
+                                      map.getPixelFromCoordinate(extent /*new ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857')*/ .slice(0, 2))[0] -
+                                      map.getPixelFromCoordinate(extent /*new ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857')*/ .slice(2))[0]);
+            var pixelHeigh = Math.abs(
+                                      map.getPixelFromCoordinate(extent /*new ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857')*/ .slice(0, 2))[1] -
+                                      map.getPixelFromCoordinate(extent /*new ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857')*/ .slice(2))[1]
+                                      );
+
+            //Default size
+            if (mResolution[0] < 600) {
+                var width = 600;
+                var height = width / pixelWidth * pixelHeigh;
+
+            } else {
+                var width = mResolution[0];
+                var height = width / pixelWidth * pixelHeigh;
+            }
+            $('#map').height(height + 'px').width(width + 'px').css('float', 'left');
+            $('.control-box').width(width + 'px');
+
+            layerLoadList = {
+            legend: {},
+            image: {}
+            }
+            startLoading()
+
+            for (var layerIdx in weatherLayerList) {
+                layerLoadList.legend[layerIdx] = false;
+                csvLayerMap[weatherLayerList[layerIdx]] = {
+                    'csv-data': '',
+                    'csv-tmp-var': {
+                        'dx': 0.05006,
+                        'dy': 0.0375,
+                        'xs': null,
+                        'xs0': null,
+                        'ys0': null
+                    }
+                };
+
+                requestCSV(weatherLayerList[layerIdx], csvLayerMap[weatherLayerList[layerIdx]]);
+                map.addLayer(initLayer(weatherLayerList[layerIdx]));
+                initLegend(weatherLayerList[layerIdx]);
+            }
+
+            function initLegend(layer) {
+                var namelayer = layer.replace(/:/g, '-');
+                var $legend = $('<img>', {
+                    id: 'legend-' + namelayer,
+                    class: 'legend',
+                alt: ""
+                })
+                var $legendDiv = $('<div>', {
+                    class: 'legenddiv'
+                }).append($legend).append($('<p></p>').html(layer));
+
+                $('.legend-box').prepend($legendDiv);
+                var srcimg = WMS_BASE_URL + '?VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=' + format + '&LAYERS=' + layer + '&TRANSPARENT=false&STYLES=' + viewstyle + ' ';
+                $legend.attr('src', srcimg).attr('alt', srcimg)//.css('left', ($("#map").width() + 8 - 128) + 'px').css('top', $('.map').height() - 256 + 8);
+            }
+
+
+        })
+
+        $('#export-png').on('click', function(event) {
+            map.once('postcompose', function(event) {
+
+                var canvas = event.context.canvas;
+                var context1 = canvas.getContext('2d');
+                var lengthLegend = weatherLayerList.length
+                //canvas.width
+                var newCanvas = $('<canvas class="ol-unselectable" width="' + (canvas.width + (lengthLegend * 128)) + '" height="' + canvas.height + '" style="width: 100%; height: 100%; display: block;"></canvas>').css('display', 'none');
+                $('body').append(newCanvas);
+                newCanvas = newCanvas.get(0);
+                context = newCanvas.getContext('2d');
+                context.drawImage(canvas, 0, 0, canvas.width, canvas.height)
+
+                make_base();
+
+                function make_base() {
+
+                    for (var layerIdx in weatherLayerList) {
+                        var legend_image = new Image();
+                        var layername = weatherLayerList[layerIdx];
+                        var srcimg = $('#legend-' + weatherLayerList[layerIdx].replace(/:/g, '-')).attr('src');
+                        legend_image.alt = layerIdx;
+                        legend_image.name = layername;
+                        legend_image.src = srcimg; //'image/legend/' + parameterSetting[$('#parameter').val()].legendUrl;
+
+                        legend_image.onload = function(event) {
+                            console.log(event);
+                            var nr = Number(event.currentTarget.alt);
+                            var name = event.currentTarget.name;
+                            var diffHeight = 256;
+                            var diffWidth = 128;
+                            if (newCanvas.height < 128) {
+                                var diffHeight = newCanvas.height;
+                                var diffWidth = (diffHeight / 2);
+                            }
+
+
+                            var xPos = newCanvas.width - (diffWidth + (diffWidth * nr)); //0 leftside
+                            var yPos = 0;//newCanvas.height - diffHeight; //0 top
+
+                            context.drawImage(this, xPos, yPos, diffWidth, diffHeight);
+                            context.moveTo(0,0);
+                            context.font = "12px Arial";
+                            context.rotate(90*Math.PI/180);
+                            //context.rotate(-Math.PI/2/(3*6));
+                            context.textAlign = "center";
+                            //context.fillText("Your Label Here", xPos, yPos);
+                            context.fillText(name, yPos +(256 /2), -(xPos + 114))
+                            context.rotate(-90*Math.PI/180);
+                            context.restore();
+
+
+
+                            layerLoadList.legend[nr] = true;
+
+                            if (allLegendDrawn()) {
+                                if (navigator.msSaveBlob) {
+                                    navigator.msSaveBlob(newCanvas.msToBlob(), 'map.png');
+                                } else {
+                                    newCanvas.toBlob(function(blob) {
+                                        saveAs(blob, 'map.png');
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+            });
+            map.renderSync();
+        })
+
+
+        //hover CSV
+        map.on('pointermove', function(evt) {
+            if (evt.dragging) {
+                return;
+            }
+            //check CSV for all weatherlayer
+
+            var coord = evt.coordinate;
+            var lonLat = coord; //new ol.proj.transform(coord, viewCrs, crsWMS);
+            var latlonText = '<p style="text-align: left;">Lat: <span style="margin-left: 20px;">' +
+            roundLatLon(lonLat[1]) + '°</span></p><p style="text-align: left;">Lon: <span style="margin-left: 17px;">' +
+            roundLatLon(lonLat[0]) + '°</span></p>';
+            var valueText = '';
+
+            for (var idx in weatherLayerList) {
+                var layerName = weatherLayerList[idx];
+
+                if (csvLayerMap[layerName]['csv-data']) {
+                    if (get_val(csvLayerMap[layerName], lonLat[0], lonLat[1])) {
+                        // console.log(get_val(lonLat[0],lonLat[1]));
+
+                        var value = get_val(csvLayerMap[layerName], lonLat[0], lonLat[1]);
+                        //console.log( lonLat[0] +' '+ lonLat[1] +' : ' +value)
+                        var htmlValue = (checkValue(value) != 'Unauthorized') ? checkValue(value) + ' ' : '' //+ countryCurrency + '/MWh' : '' //Unauthorized
+
+                        function checkValue(value) {
+                            if (value != -999) {
+                                return value
+                            } else {
+                                return 'Unauthorized'
+                            }
+                        }
+                        // var coordHDMS = ol.coordinate.toStringHDMS(lonLat);
+
+                        valueText = valueText + '<p><span class="hover-layer-name">' + layerName + ': </span><span class="hover-layer-value">' + htmlValue + '</span></p>';
+                        //'lon:' + round2Dec(lonLat[0]) + ', lat:' + round2Dec(lonLat[1]) + ', value:' + get_val(lonLat[0], lonLat[1]) ///evt.coordinate.toString();
+
+                    }
+                }
+            }
+            if (valueText) {
+                helpTooltipElement.innerHTML = latlonText + valueText;
+                helpTooltip.setPositioning(getPositioningFromCenter(evt.coordinate))
+                helpTooltip.setPosition(evt.coordinate);
+                //offset: [30, 30],
+                //helpTooltip.setPosition(getPositioningFromCenter(evt.coordinate));
+                helpTooltipElement.classList.remove('hidden');
+            }
+
+            function getPositioningFromCenter(coords) {
+                if (coords[0] <= centerXY[0]) {
+                    leftOrRight = 'left';
+                } else {
+                    leftOrRight = 'right';
+                }
+                if (coords[1] <= centerXY[1]) {
+                    topOrBottom = 'bottom';
+                } else {
+                    topOrBottom = 'top';
+                }
+
+                return topOrBottom + '-' + leftOrRight;
+
+            }
+
+
+
+
+
+            function get_val(csvRef, x, y) {
+
+                x = +customRound(x, csvRef['csv-tmp-var'].dx, csvRef['csv-tmp-var'].xs0).toFixed(4);
+
+                function closest(num, arr) {
+                    var mid;
+                    var lo = 0;
+                    var hi = arr.length - 1;
+                    while (hi - lo > 1) {
+                        mid = Math.floor((lo + hi) / 2);
+                        if (arr[mid] < num) {
+                            lo = mid;
+                        } else {
+                            hi = mid;
+                        }
+                    }
+                    if (num - arr[lo] <= arr[hi] - num) {
+                        return arr[lo];
+                    }
+                    return arr[hi];
+                }
+
+                x = closest(x, csvRef['csv-tmp-var'].xs); //csvRef['csv-tmp-var'].xs.indexOf(x);
+                x = csvRef['csv-tmp-var'].xs.indexOf(x);
+                if (x == -1) {
+                    x = -999;
+                    return -999;
+                }
+
+                y = parseInt(Math.round((csvRef['csv-tmp-var'].ys0 - y) / csvRef['csv-tmp-var'].dy));
+
+                // console.log(x)
+                // console.log(y)
+
+                if (!csvRef['csv-data'][y + 3] || !csvRef['csv-data'][y + 3][0]) {
+                    return -999;
+                }
+                ys_x = csvRef['csv-data'][y + 3][0];
+                ys_x = ys_x.split(";");
+
+
+                return ys_x[x + 1];
+            }
+
+        });
+
+        map.getViewport().addEventListener('mouseout', function() {
+            helpTooltipElement.classList.add('hidden');
+        });
+        createHelpTooltip();
+    })
+
+
+
+    function roundLatLon(val) {
+        return Math.round(val * 100000) / 100000;
+    }
+
+    function customRound(number, increment, offset) {
+        return Math.round((number - offset) / increment) * increment + offset;
+    }
+    /**
+     * Creates a new help tooltip
+     */
+    function createHelpTooltip() {
+        if (helpTooltipElement) {
+            helpTooltipElement.parentNode.removeChild(helpTooltipElement);
+        }
+        helpTooltipElement = document.createElement('div');
+        helpTooltipElement.className = 'tooltip hidden';
+        helpTooltip = new ol.Overlay({
+        element: helpTooltipElement,
+            //offset: [30, 30],
+        positioning: 'center-left'
+        });
+        map.addOverlay(helpTooltip);
+    }
+
+
+    function startLoading() {
+        $('.loader').addClass('loading');
+        $('.ol-viewport').addClass('loading');
+        $('#export-png').attr('disabled', true);
+    }
+
+    function stopLoading() {
+        $('.loader').removeClass('loading');
+        $('.ol-viewport').removeClass('loading');
+        $('#export-png').attr('disabled', false);
+
+    }
+
+    function calcCenter(mLatMinLonMax, mLatMaxLonMin) {
+        //min + abs(min - max)
+        return [(mLatMaxLonMin[1] + Math.abs(mLatMaxLonMin[1] - mLatMinLonMax[1]) / 2),(mLatMinLonMax[0] + Math.abs(mLatMinLonMax[0] - mLatMaxLonMin[0]) / 2)]
+    }
+
+    function allLegendDrawn() {
+        for (var legendnr in layerLoadList.legend) {
+            if (layerLoadList.legend[legendnr] == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function initLayer(layer) {
+        //https://api.meteomatics.com/wms?VERSION=1.3.0&REQUEST=GetMap&LAYERS=mix:t_2m:C&STYLE=JET&CRS=EPSG:4326&BBOX=-90,-180,90,180&WIDTH=1024&HEIGHT=512&FORMAT=image/png
+        var url = WMS_BASE_URL + '?';
+        url += 'VERSION=1.3.0&REQUEST=GetMap'
+        url += '&LAYERS=' + layer;
+        url += '&STYLE=' + viewstyle;
+        url += '&CRS=' + crs;
+        url += '&TIME=' + datetime;
+        url += '&BBOX=' + extentApi.join(',');
+        url += '&WIDTH=' + mResolution[0]; //1024
+        url += '&HEIGHT=' + mResolution[1]; //512
+        url += '&FORMAT=' + format;
+        url += optionals;
+
+        var source = new ol.source.ImageStatic({
+        url: url,
+        imageExtent: extent,
+        imageSize: mResolution,
+        projection: 'EPSG:4326',
+        });
+
+        source.on('imageloadend', function(event) {
+            console.log('finished');
+            //render finished:
+            imagesLoaded++;
+            if (imagesLoaded == imageCount) {
+                stopLoading();
+            }
+
+            if (first) {
+                first = false;
+                map.updateSize();
+                view.fit(extent /*new ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857')*/ , {
+                constrainResolution: false
+                });
+            }
+        });
+        source.on('imageloaderror', function(event) {
+            console.log('error');
+            imagesLoaded++;
+            if (imagesLoaded == imageCount) {
+                stopLoading()
+            }
+
+        });
+
+
+
+        return new ol.layer.Image({
+        opacity: 0.7,
+        zIndex: 20,
+        source: source,
+            //extent: extent
+        });
+    }
+    function requestCSV(weatherlayer, csvRef) {
+        console.log(weatherlayer);
+        var layerName = weatherlayer.substring(weatherlayer.indexOf(':') + 1);
+
+        var url = API_BASE_URL + '/'+datetime+'/' + layerName + '/' +rect.join('_') + ':' + mResolution.join('x') + '/csv' + '?' + optionals;
+        //console.log(url);
+        $.ajax({
+        url: url,
+        success: function(csvd) {
+            csvRef['csv-data'] = $.csv.toArrays(csvd, {
+            seperator: ";"
+            });
+
+            xs = csvRef['csv-data'][2][0].split(";");
+            xs = xs.slice(1, xs.length);
+            csvRef['csv-tmp-var'].xs = $.map(xs, Number);
+            csvRef['csv-tmp-var'].xs0 = Number(xs[0])
+
+            ys = csvRef['csv-data'][3][0].split(";");
+            csvRef['csv-tmp-var'].ys0 = Number(ys[0])
+            //CSV loaded
+
+
+            csvRef['csv-tmp-var'].dx = Math.abs(csvRef['csv-tmp-var'].xs[0]-csvRef['csv-tmp-var'].xs[1])
+            csvRef['csv-tmp-var'].dy = Number(Math.abs(csvRef['csv-data'][4][0].split(";")[0] - csvRef['csv-data'][3][0].split(";")[0]).toFixed(6))
+
+        },
+        error: function( jqXHR, textStatus, errorThrown) {
+            if(jqXHR.status != 200){
+                $('.info-error p').html('Tool tips disabled. ' + 'Error: ' + jqXHR.responseText)
+            }else {
+                console.error(this);
+            }
+        },
+        dataType: "text",
+        complete: function() {}
+        });
+    }
+
+    </script>
+    </body>
+
+    </html>

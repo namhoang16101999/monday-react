@@ -1,0 +1,18 @@
+/* * {
+  font-family: "Inter", sans-serif !important;
+} */
+
+body {
+  background-color: #f3f5f9;
+  padding: 25px !important;
+}
+
+ .paper {
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.08) 0px 2px 6px;
+  border-radius: 0.28571429rem
+}
+
+.ant-form-item-explain-error {
+  color: red
+}
