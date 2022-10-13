@@ -57,6 +57,9 @@ const OpenAIForm = () => {
                     <Option key={2} value={OPEN_AI_TYPE.GENERATE_IDEA}>
                         Generate Detail For Idea
                     </Option>
+                    <Option key={4} value={OPEN_AI_TYPE.GENERATE_CODE}>
+                        Generate Code
+                    </Option>
                     <Option key={3} value={OPEN_AI_TYPE.SUMMARIZE_EMAIL}>
                         Summarize Email
                     </Option>
