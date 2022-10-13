@@ -75,6 +75,21 @@ const OpenAIForm = () => {
             >
                 <Input.TextArea autoSize rows={5}/>
             </Form.Item>
+
+            <Form.Item
+                label="Max Tokens"
+                name="maxTokens"
+            >
+                <Input type="number"/>
+            </Form.Item>
+
+            <Form.Item
+                label="N"
+                name="n"
+            >
+                <Input type="number"/>
+            </Form.Item>
+
             <Form.Item className="btn-login">
                 <Button
                     type="primary"
