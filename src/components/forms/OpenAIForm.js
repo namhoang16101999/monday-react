@@ -1,13 +1,21 @@
-import React, { useState } from "react";
-import { Form, Button, Select, Input, notification } from "antd";
+import React, { useState, useEffect } from "react";
+import { Form, Button, Select, Input, notification, Space } from "antd";
 import { useDispatch } from "react-redux";
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { OPEN_AI_TYPE } from "../../constants";
 import { getOpenAIText } from "../../services";
 import { setResult } from "../../store/reducer";
+import { AudioOutlined, AudioMutedOutlined, CloseOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 
 const OpenAIForm = () => {
+    const {
+        transcript,
+        listening,
+        resetTranscript,
+        browserSupportsSpeechRecognition
+      } = useSpeechRecognition();
     const dispatch = useDispatch();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false)
@@ -23,7 +31,18 @@ const OpenAIForm = () => {
             })
         }
     }
+    
+    useEffect(() => {
+        if(transcript) {
+            form.setFieldsValue({ text: transcript })
+        }
+    }, [transcript])
 
+
+    // if (!browserSupportsSpeechRecognition) {
+    //     return <span>Browser doesn't support speech recognition.</span>;
+    // }
+   
     return (
         <Form
             form={form}
@@ -34,6 +53,7 @@ const OpenAIForm = () => {
             labelCol={{ span: 5 }}
             onFinish={onFinish}
         >
+           
             <Form.Item
                 label="Type"
                 name="type"
@@ -66,16 +86,39 @@ const OpenAIForm = () => {
                 </Select>
             </Form.Item>
 
-            <Form.Item
-                label="Text"
-                name="text"
-                rules={[{
-                    required: true
-                }]}
-            >
-                <Input.TextArea autoSize rows={5}/>
-            </Form.Item>
-
+          
+                <Form.Item
+                    label="Text"
+                    name="text"
+                    rules={[{
+                        required: true
+                    }]}
+                >
+                    <Input.TextArea autoSize rows={5}/>
+                </Form.Item>
+          
+            <p>Microphone: {listening ? 'on' : 'off'}</p>
+            <Button 
+                icon={<AudioOutlined />} 
+                onClick={() => {
+                    SpeechRecognition.startListening({
+                        continuous: true
+                    })}
+                }
+            />
+            <Button 
+                icon={<AudioMutedOutlined />} 
+                onClick={ SpeechRecognition.stopListening }
+            />
+            <Button 
+                icon={<CloseOutlined />} 
+                onClick={() => {
+                    resetTranscript()
+                    form.setFieldsValue({ text: "" })
+                }}
+            />
+            <br/>
+            <br/>
             <Form.Item
                 label="Max Tokens"
                 name="maxTokens"
