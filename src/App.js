@@ -1,25 +1,19 @@
 import './App.css';
-import Main from './pages';
+import OpenAI from './pages/OpenAI';
 import "antd/dist/antd.css";
-import { Card, Col, Row } from "antd";
+import { Route, Switch } from 'react-router-dom';
 import { Provider } from "react-redux";
 import store from './store';
+import QandA from './pages/QandA';
 
 const App = () => {
   return (
     <Provider store={store}>
-      <Row gutter={15} style={{
-        margin: "0 auto"
-      }}>
-        <Col span={24}>
-          <Card
-              className='paper'
-              title = "Open AI"
-            >
-              <Main/>
-            </Card>
-        </Col>
-      </Row>
+      <Switch>
+        <Route exact path={"/"}><OpenAI/></Route>
+        <Route exact path={"/openai"}><OpenAI/></Route>
+        <Route exact path={"/qanda"}><QandA/></Route>
+      </Switch>
     </Provider>
   );
 }

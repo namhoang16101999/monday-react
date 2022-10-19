@@ -3,16 +3,19 @@ import { BE_URL } from "../constants";
 
 export const getOpenAIText = async ({
    type, 
-   text
+   text,
+   maxTokens,
+   n
 }) => {
-
     try {
         const { data, status } = await axios({
             method: "POST",
             url: `${BE_URL}/api/openai`,
             data: {
                 type, 
-                text
+                text,
+                maxTokens,
+                n
             }
         })
         if(status === 200) {

@@ -27,8 +27,9 @@ const OpenAIForm = () => {
             setLoading(false)
         } catch (err) {
             notification.error({
-                message: err
+                message: JSON.stringify(err)
             })
+            setLoading(false)
         }
     }
     
@@ -38,11 +39,6 @@ const OpenAIForm = () => {
         }
     }, [transcript])
 
-
-    // if (!browserSupportsSpeechRecognition) {
-    //     return <span>Browser doesn't support speech recognition.</span>;
-    // }
-   
     return (
         <Form
             form={form}
