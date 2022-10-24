@@ -1,12 +1,21 @@
-import { Card, Col, Row } from "antd";
+import React, { useState } from "react"
+import { Card, Col, Row, Button } from "antd";
 import QandAForm from "../components/forms/QandAForm";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
-import { useSpeechSynthesis } from 'react-speech-kit';
 
+const synth = window.speechSynthesis;
 const QandA = () => {
   const { result } = useSelector(({ store }) => store)
-  const { speak } = useSpeechSynthesis();
+  const { selectedVoice } = useSelector(({ store }) => store)
+
+  const speak = ({ text }) => {
+    console.log(text, selectedVoice)
+    var utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = synth.getVoices()[selectedVoice];
+    utterance.lang = "ja-JP"
+    synth.speak(utterance);
+  };
 
   useEffect(() => {
     if(result) {
